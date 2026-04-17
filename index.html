@@ -414,7 +414,7 @@
 
     .score-box{
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(2,1fr); /* CẬP NHẬT: Chia 2 cột thay vì 3 */
       gap:14px;
       margin-top:18px;
     }
@@ -436,45 +436,6 @@
       font-size:28px;
       font-weight:800;
       color:var(--primary);
-    }
-
-    .result-box{
-      margin-top:18px;
-      border-radius:22px;
-      padding:20px;
-      border:1px solid #bfdbfe;
-      background:linear-gradient(180deg,#f8fbff 0%, #eef8ff 100%);
-    }
-
-    .result-box.low{
-      border-color:#a7f3d0;
-      background:linear-gradient(180deg,#f7fff9 0%, #effdf3 100%);
-    }
-
-    .result-box.medium{
-      border-color:#fde68a;
-      background:linear-gradient(180deg,#fffdf7 0%, #fff8e7 100%);
-    }
-
-    .result-box.high{
-      border-color:#fecaca;
-      background:linear-gradient(180deg,#fff8f8 0%, #fff0f0 100%);
-    }
-    .result-box.warning{
-      border-color:#fdba74;
-      background:linear-gradient(180deg,#fffaf5 0%, #fff4ec 100%);
-    }
-    .result-title{
-      margin:0 0 8px;
-      font-size:22px;
-      font-weight:800;
-    }
-
-    .result-desc,
-    .result-note{
-      margin:0;
-      line-height:1.7;
-      color:#33555d;
     }
 
     .required{color:var(--danger)}
@@ -889,12 +850,6 @@
               </div>
             </div>
 
-            <div class="result-box" id="resultBox">
-              <div class="result-title" id="resultTitle">Kết quả sàng lọc</div>
-              <p class="result-desc" id="resultDesc">Chưa có dữ liệu.</p>
-              <p class="result-note" id="resultNote" style="margin-top:10px;"></p>
-            </div>
-
             <div class="alert success" id="submitSuccess"></div>
             <div class="alert error" id="submitError"></div>
 
@@ -911,7 +866,7 @@
   </div>
 
   <script>
-    // URL của bạn được giữ nguyên
+    // URL CỦA BẠN ĐƯỢC GIỮ NGUYÊN
     const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbztS6kHwFwMcphw2WmUZz95_ikVdFVGg2Wq-__wxF5QWHOFakJJNrDdYK85uug3rZz6/exec";
 
     const state = { step: 1, totalSteps: 3 };
@@ -922,6 +877,7 @@
       3: { title: "Kết quả và gửi dữ liệu", desc: "Xem kết quả tính điểm và gửi thông tin về hệ thống lưu trữ." }
     };
 
+    // CẬP NHẬT: Loại bỏ các biến HTML cũ
     const els = {
       form: document.getElementById("screeningForm"),
       progressBar: document.getElementById("progressBar"),
@@ -937,11 +893,6 @@
       submitError: document.getElementById("submitError"),
       totalScore: document.getElementById("totalScore"),
       riskLevel: document.getElementById("riskLevel"),
-      shortAdvice: document.getElementById("shortAdvice"),
-      resultTitle: document.getElementById("resultTitle"),
-      resultDesc: document.getElementById("resultDesc"),
-      resultNote: document.getElementById("resultNote"),
-      resultBox: document.getElementById("resultBox"),
       submitBtn: document.getElementById("submitBtn")
     };
 
@@ -979,13 +930,11 @@
       return field ? field.value.trim() : "";
     }
 
-    // Hàm lấy điểm câu hỏi mới: Nếu bị ẩn/không chọn thì MẶC ĐỊNH LÀ "0"
     function getQValue(name){
       const field = document.querySelector(`input[name="${name}"]:checked`);
       return field ? field.value.trim() : "0";
     }
 
-    // ====== HÀM XỬ LÝ NHẢY CÂU HỎI (SKIP LOGIC) ======
     function clearRadioGroups(names) {
       names.forEach(name => {
         document.querySelectorAll(`input[name="${name}"]`).forEach(r => r.checked = false);
@@ -1001,32 +950,26 @@
       const wrapQ3 = document.getElementById("wrap-q3");
       const wrapQ4to8 = document.getElementById("wrap-q4-to-8");
 
-      // Mặc định hiển thị tất cả
       wrapQ2.style.display = "block";
       wrapQ3.style.display = "block";
       wrapQ4to8.style.display = "block";
 
       if (q1 === "0") {
-        // Nếu câu 1 = Không bao giờ -> Ẩn câu 2 đến 8
         wrapQ2.style.display = "none";
         wrapQ3.style.display = "none";
         wrapQ4to8.style.display = "none";
         clearRadioGroups(["q2", "q3", "q4", "q5", "q6", "q7", "q8"]);
       } else {
-        // Nếu câu 1 > 0 -> Hiện câu 2, 3. Kiểm tra tiếp tổng điểm câu 2 và 3
         if (q2 === "0" && q3 === "0") {
-          // Nếu câu 2 và câu 3 đều bằng 0 -> Ẩn câu 4 đến 8
           wrapQ4to8.style.display = "none";
           clearRadioGroups(["q4", "q5", "q6", "q7", "q8"]);
         }
       }
     }
 
-    // Lắng nghe sự thay đổi ở Câu 1, Câu 2, Câu 3 để tự động ẩn/hiện
     document.querySelectorAll('input[name="q1"], input[name="q2"], input[name="q3"]').forEach(radio => {
       radio.addEventListener('change', handleSkipLogic);
     });
-    // ===============================================
 
     function validateStep1(){
       hideAlert(els.step1Error);
@@ -1068,12 +1011,10 @@
       const q2 = getValue("q2");
       const q3 = getValue("q3");
 
-      // Các câu hỏi bắt buộc dựa theo logic hiển thị
       let activeQuestions = ["q1", "q9", "q10"];
 
       if (q1 !== "0" && q1 !== "") {
         activeQuestions.push("q2", "q3");
-        // Nếu câu 2 và 3 đã trả lời và tổng của chúng > 0, thì câu 4-8 mới bắt buộc
         if (!(q2 === "0" && q3 === "0") && q2 !== "" && q3 !== "") {
           activeQuestions.push("q4", "q5", "q6", "q7", "q8");
         }
@@ -1093,14 +1034,12 @@
       let total = 0;
       const qScores = {};
       
-      // Tính điểm và gán mảng điểm chi tiết
       questions.forEach(q => {
         const val = Number(getQValue(q));
         qScores[q] = val;
         total += val;
       });
 
-      // BƯỚC 1: Phân nhóm dựa trên tổng điểm
       let group = 1;
       if (total === 0) group = 1;
       else if (total <= 7) group = 1;
@@ -1108,71 +1047,32 @@
       else if (total <= 19) group = 3;
       else group = 4;
 
-      // BƯỚC 2: Kiểm tra các quy tắc ngoại lệ (Nhảy nhóm)
-      // Lưu ý 1: 8-15 điểm nhưng q9=4 hoặc q10=4 -> Nhóm 3
       if (group === 2 && (qScores["q9"] === 4 || qScores["q10"] === 4)) {
         group = 3;
       }
 
-      // Lưu ý 2: q4 >= 2 VÀ q5 >= 2 VÀ q6 >= 2 -> Nhóm 4
       if (qScores["q4"] >= 2 && qScores["q5"] >= 2 && qScores["q6"] >= 2) {
         group = 4;
       }
 
-      // BƯỚC 3: Xuất kết quả
+      // CẬP NHẬT: Loại bỏ tính toán tiêu đề, desc, note, khuyến nghị...
       let level = "";
-      let shortAdvice = "";
-      let title = "";
-      let desc = "";
-      let note = "";
-      let boxClass = "result-box";
 
       if(group === 1){
         level = "Nhóm 1: Nguy cơ thấp";
-        boxClass += " low";
-        if(total === 0){
-          shortAdvice = "Khuyến khích duy trì";
-          title = "Nhóm 1: Nguy cơ thấp (0 điểm)";
-          desc = "Cần động viên, khuyến khích bạn duy trì hành vi tiếp tục không uống rượu, bia.";
-          note = "Hãy tiếp tục giữ vững lối sống lành mạnh này nhé.";
-        } else {
-          shortAdvice = "Nâng cao nhận thức";
-          title = "Nhóm 1: Nguy cơ thấp (1 - 7 điểm)";
-          desc = "Bạn đang ở mức nguy cơ thấp. Cần được truyền thông nâng cao nhận thức về tác hại của rượu bia.";
-          note = "Nên cố gắng duy trì mức uống an toàn và theo dõi sức khỏe thường xuyên.";
-        }
       } else if(group === 2){
         level = "Nhóm 2: Nguy cơ cao";
-        shortAdvice = "Cần giáo dục nhận thức";
-        title = "Nhóm 2: Nguy cơ cao";
-        desc = "Bạn có nguy cơ cao bị ảnh hưởng sức khỏe do rượu bia. Cần được giáo dục nhận thức về tác hại và cách giảm thiểu rủi ro.";
-        note = "Khuyến khích bạn bắt đầu giảm tần suất và số lượng uống rượu bia ngay từ bây giờ.";
-        boxClass += " medium";
       } else if(group === 3){
         level = "Nhóm 3: Nguy cơ rất cao";
-        shortAdvice = "Tư vấn nhanh & theo dõi";
-        title = "Nhóm 3: Nguy cơ rất cao";
-        desc = "Mức độ uống rượu bia của bạn đang ở ngưỡng rất cao. Bạn CẦN được tư vấn nhanh và tiếp tục theo dõi tình trạng.";
-        note = "Sức khỏe của bạn có thể đang bị ảnh hưởng nghiêm trọng. Hãy trao đổi thêm với nhân viên y tế.";
-        boxClass += " warning"; // Class màu cam mới thêm
       } else if(group === 4){
         level = "Nhóm 4: Lệ thuộc / Nghiện";
-        shortAdvice = "Chẩn đoán & Điều trị";
-        title = "Nhóm 4: Nguy cơ lệ thuộc/Nghiện";
-        desc = "Báo động: Bạn cần được giới thiệu đến cơ sở y tế chuyên khoa để chẩn đoán và điều trị kịp thời.";
-        note = "Đây là mức độ nguy hiểm nhất. Đừng chần chừ, hãy tìm kiếm sự hỗ trợ chuyên môn y tế lập tức.";
-        boxClass += " high";
       }
 
       els.totalScore.textContent = total;
       els.riskLevel.textContent = level;
-      els.shortAdvice.textContent = shortAdvice;
-      els.resultTitle.textContent = title;
-      els.resultDesc.textContent = desc;
-      els.resultNote.textContent = note;
-      els.resultBox.className = boxClass;
 
-      return { total, level, shortAdvice };
+      // CẬP NHẬT: Không trả về shortAdvice
+      return { total, level };
     }
 
     function collectFormData(){
@@ -1196,8 +1096,8 @@
         q9: getQValue("q9"),
         q10: getQValue("q10"),
         totalScore: result.total,
-        riskLevel: result.level,
-        shortAdvice: result.shortAdvice
+        riskLevel: result.level
+        // CẬP NHẬT: Xóa bỏ thuộc tính shortAdvice
       };
     }
     async function submitToGoogleSheets(data){
@@ -1245,13 +1145,11 @@
         els.form.reset();
         els.totalScore.textContent = "0";
         els.riskLevel.textContent = "-";
-        els.shortAdvice.textContent = "-";
-        els.resultTitle.textContent = "Kết quả sàng lọc";
-        els.resultDesc.textContent = "Dữ liệu đã được gửi thành công.";
-        els.resultNote.textContent = "";
-        els.resultBox.className = "result-box";
+        
+        // CẬP NHẬT: Xóa các thao tác reset HTML cũ
+        
         setStep(1);
-        handleSkipLogic(); // Reset luôn cả UI ẩn/hiện
+        handleSkipLogic();
       }catch(err){
         showAlert(els.submitError, err.message || "Có lỗi khi gửi dữ liệu.");
       }finally{
@@ -1317,7 +1215,7 @@
 
     renderWardList();
     setStep(1);
-    handleSkipLogic(); // Khởi chạy kiểm tra ẩn hiện lần đầu
+    handleSkipLogic(); 
   </script>
 </body>
 </html>
